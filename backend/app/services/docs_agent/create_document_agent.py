@@ -14,8 +14,6 @@ class State(TypedDict):
   doc_type: Optional[str]
   template_content: Optional[str]
 
-
-
 class CreateDocumentAgent:
   def __init__(self, model='gpt-4o', temperature=0.7):
 
@@ -29,6 +27,9 @@ class CreateDocumentAgent:
     self.app = self._build_graph()
 
   def _load_templates(self):
+    """
+    YAML 파일에서 템플릿 로드하는 함수.
+    """
     try:
         # 현재 스크립트와 같은 디렉토리에서 templates.yaml 파일 찾기
         current_dir = Path(__file__).parent
@@ -42,11 +43,14 @@ class CreateDocumentAgent:
         # YAML 파일 읽기 및 파싱
         with open(template_path, 'r', encoding='utf-8') as file:
             data = yaml.safe_load(file)
-            return data.get('templates', {})
-            
+            return data.get('templates', {})           
     except Exception as e:
         print(f"[ERROR] 템플릿 로드 중 오류 발생: {e}")
         return {}
+
+#========================================================================================================================
+# 노드
+#======================================================================================================================== 
 
   def classify_doc_type(self, state: State) -> State:
     """
@@ -87,6 +91,9 @@ class CreateDocumentAgent:
       print(f"{content} 템플릿 추가 완료: ")
       return state
 
+#========================================================================================================================
+# 그래프 빌드
+#========================================================================================================================
   def _build_graph(self):
     workflow = StateGraph(State)
 
@@ -97,7 +104,10 @@ class CreateDocumentAgent:
     workflow.add_edge('classify_doc_type', END)
 
     return workflow.compile()
-
+    
+#========================================================================================================================
+# 그래프 실행
+#========================================================================================================================
   def run(self, user_input: str):
     # 초기 상태 설정
     initial_state = {
